@@ -63,11 +63,13 @@ else
 	"4" "Clean and test" OFF \
 	"6" "Install locally" OFF \
 	"0" "Clean, test and deploy" ON \
-	"1" "Staging release" ON \
+	"1a" "Staging release" ON \
 	"2" "Commit new pom.xml" ON \
 	"3" "Tag" ON \
         "7" "Git push" ON \
-	"8" "Git push tags" ON 3>&1 1>&2 2>&3);
+	"8" "Git push tags" ON \
+	"1b" "Drop release" OFF \
+	3>&1 1>&2 2>&3);
 fi
 
 if [[ "$ACTION_LIST" == ""  ]]; then
@@ -110,9 +112,13 @@ if [[ $ACTION_LIST =~ "6" ]] ; then
         mvn -B clean install
 	echo "Install locally $NEW_POM_VERSION"
 fi
-if [[ $ACTION_LIST =~ "1" ]] ; then
+if [[ $ACTION_LIST =~ "1a" ]] ; then
 	mvn -B nexus-staging:release -DstagingProgressTimeoutMinutes=30
 fi
+if [[ $ACTION_LIST =~ "1b" ]] ; then
+        mvn -B nexus-staging:drop -DstagingProgressTimeoutMinutes=30
+fi
+
 if [[ $ACTION_LIST =~ "5" ]] ; then
 	git add pom.xml 
         if [ -f "THIRD-PARTY.txt" ]; then
