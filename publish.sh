@@ -54,7 +54,7 @@ if [[ "$NEW_POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
 	"What do you want to do with new $NEW_POM_VERSION?" 0 0 4 \
 	"4" "Clean and test" OFF \
 	"6" "Install locally" OFF \
-        "9" "Create git branch" OFF \
+	"9" "Create git branch" OFF \
 	"5" "Commit new pom.xml" ON \
 	"7" "Git push" ON 3>&1 1>&2 2>&3);
 else
@@ -66,7 +66,7 @@ else
 	"1a" "Staging release" ON \
 	"2" "Commit new pom.xml" ON \
 	"3" "Tag" ON \
-        "7" "Git push" ON \
+	"7" "Git push" ON \
 	"8" "Git push tags" ON \
 	"1b" "Drop release" OFF \
 	3>&1 1>&2 2>&3);
@@ -77,13 +77,13 @@ if [[ "$ACTION_LIST" == ""  ]]; then
 fi
 
 if [[ $ACTION_LIST =~ "9" ]] ; then
-        NEW_BRANCH_NAME=$(whiptail --title "Create git branch" --inputbox "Enter the new branch name:" 0 0 3>&1 1>&2 2>&3);
+	NEW_BRANCH_NAME=$(whiptail --title "Create git branch" --inputbox "Enter the new branch name:" 0 0 3>&1 1>&2 2>&3);
 	ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
-        BRANCH_REF_NAME=$(whiptail --title "From this git branch reference" --inputbox "Enter the actual branch name:" 0 0 "$ACTUAl_BRANCH" 3>&1 1>&2 2>&3);
-        if [[ "$ACTION_LIST" == ""  ]]; then
-                echo "No branch name, cancel operation"
+	BRANCH_REF_NAME=$(whiptail --title "From this git branch reference" --inputbox "Enter the actual branch name:" 0 0 "$ACTUAl_BRANCH" 3>&1 1>&2 2>&3);
+	if [[ "$ACTION_LIST" == ""  ]]; then
+		echo "No branch name, cancel operation"
 		exit 1;
-        fi
+	fi
 	echo "Create branch $NEW_BRANCH_NAME derived from $BRANCH_REF_NAME";
 	git checkout "$BRANCH_REF_NAME"
 	git fetch
@@ -93,56 +93,62 @@ if [[ $ACTION_LIST =~ "9" ]] ; then
 fi
 
 if [[ "$POM_VERSION" == "$NEW_POM_VERSION"  ]]; then
-        echo "Don't change pom version..."
+	echo "Don't change pom version..."
 else
 	echo "Change the version in pom.xml...";
 	mvn -B versions:set -DnewVersion="$NEW_POM_VERSION" -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN
-	if [ -f "pom.xml.versionsBackup" ]; then
-		rm -f "pom.xml.versionsBackup"
-	fi
+	find . -type f -name pom.xml.versionsBackup -delete
 fi
 
 if [[ $ACTION_LIST =~ "4" ]] ; then
 	mvn -B clean test
 fi
 if [[ $ACTION_LIST =~ "0" ]] ; then
-        mvn -B clean deploy -DstagingProgressTimeoutMinutes=30
+	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30
 fi
 if [[ $ACTION_LIST =~ "6" ]] ; then
-        mvn -B clean install
+	mvn -B clean install
 	echo "Install locally $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "1a" ]] ; then
 	mvn -B nexus-staging:release -DstagingProgressTimeoutMinutes=30
 fi
 if [[ $ACTION_LIST =~ "1b" ]] ; then
-        mvn -B nexus-staging:drop -DstagingProgressTimeoutMinutes=30
+	mvn -B nexus-staging:drop -DstagingProgressTimeoutMinutes=30
 fi
 
+addPOM () {
+	git add pom.xml
+	if [ "$(find . -type f -name pom.xml -printf '.' | wc -c)" -gt 1 ]; then
+		git add **/pom.xml
+	fi
+}
+
+addTHIRDPARTY () {
+	if [ -f "THIRD-PARTY.txt" ]; then
+		git add THIRD-PARTY.txt
+	fi
+	if [ "$(find . -type f -name THIRD-PARTY.txt -printf '.' | wc -c)" -gt 0 ]; then
+		git add **/THIRD-PARTY.txt
+	fi
+}
+
 if [[ $ACTION_LIST =~ "5" ]] ; then
-	git add pom.xml 
-        if [ -f "THIRD-PARTY.txt" ]; then
-                git add THIRD-PARTY.txt
-        fi
+	addPOM
+	addTHIRDPARTY
 	git commit -m "Open version $NEW_POM_VERSION"
-	echo "Enter \"git push\" for send new pom";
 fi
 if [[ $ACTION_LIST =~ "2" ]] ; then
-	git add pom.xml
-        if [ -f "THIRD-PARTY.txt" ]; then
-                git add THIRD-PARTY.txt
-        fi
+	addPOM
+	addTHIRDPARTY
 	git commit -m "Set version $NEW_POM_VERSION"
-	echo "Enter \"git push\" for send new pom";
 fi
 if [[ $ACTION_LIST =~ "3" ]] ; then
 	git tag "$NEW_POM_VERSION"
-        echo "Enter \"git push --tags\" for send new tag $NEW_POM_VERSION";
 fi
 if [[ $ACTION_LIST =~ "7" ]] ; then
-        git push
+	git push
 fi
 if [[ $ACTION_LIST =~ "8" ]] ; then
-        git push --tags
+	git push --tags
 fi
-
