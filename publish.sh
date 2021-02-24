@@ -128,7 +128,7 @@ addTHIRDPARTY () {
 	if [ -f "THIRD-PARTY.txt" ]; then
 		git add THIRD-PARTY.txt
 	fi
-	if [ "$(find . -mindepth 2 -type f -name THIRD-PARTY.txt -printf '.' | wc -c)" -gt 1 ]; then
+	if [ "$(find . -mindepth 2 -type f -name THIRD-PARTY.txt -printf '.' | wc -c)" -gt 0 ]; then
 		git add "./**/THIRD-PARTY.txt"
 	fi
 }
