@@ -77,10 +77,25 @@ if [[ "$ACTION_LIST" == ""  ]]; then
 fi
 
 if [[ $ACTION_LIST =~ "9" ]] ; then
-	NEW_BRANCH_NAME=$(whiptail --title "Create git branch" --inputbox "Enter the new branch name:" 0 0 3>&1 1>&2 2>&3);
+	RELATIVE_DIR=$(dirname $(realpath "$0"));
+	if [ "$($RELATIVE_DIR/is-gh.bash)" -eq 1 ]; then
+		if [ "$(whiptail --yesno "Do you want create a branch based on GitHub issue ?" 0 0 3>&1 1>&2 2>&3 ; echo $?)" -eq 0 ]; then
+			NEW_BRANCH_NAME=$($RELATIVE_DIR/gh-select-issue.sh);
+			if [[ "$NEW_BRANCH_NAME" == ""  ]]; then
+				echo "No branch name, cancel operation"
+				exit 1;
+			fi
+			NEW_BRANCH_NAME="issue$NEW_BRANCH_NAME";
+		else
+			NEW_BRANCH_NAME=$(whiptail --title "Create git branch" --inputbox "Enter the new branch name:" 0 0 3>&1 1>&2 2>&3);
+		fi
+	else
+		NEW_BRANCH_NAME=$(whiptail --title "Create git branch" --inputbox "Enter the new branch name:" 0 0 3>&1 1>&2 2>&3);
+	fi
+
 	ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
 	BRANCH_REF_NAME=$(whiptail --title "From this git branch reference" --inputbox "Enter the actual branch name:" 0 0 "$ACTUAl_BRANCH" 3>&1 1>&2 2>&3);
-	if [[ "$ACTION_LIST" == ""  ]]; then
+	if [[ "$NEW_BRANCH_NAME" == ""  ]]; then
 		echo "No branch name, cancel operation"
 		exit 1;
 	fi
