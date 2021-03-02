@@ -23,15 +23,16 @@
 
 if ! [ -x "$(command -v gh)" ]; then
     echo "0";
-	return;
+	exit 0;
 fi
 if [ ! -f ".git/config" ]; then
 	echo "0";
-	return;
+	exit 0;
 fi
 if [ "$(cat ".git/config" | grep "github.com" | grep "url = " | wc -l)" -eq 0 ]; then
 	echo "0";
-	return;
+	exit 0;
 fi
 
 echo "1";
+
