@@ -21,6 +21,7 @@
 #             - git
 #             - mvn
 #             - whiptail
+#             - bc
 #
 #    Update: you can use shellcheck for validate this script
 #
@@ -38,11 +39,8 @@ git pull
 
 POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout);
 
-if [[ "$POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
-	NEW_POM_VERSION=$(whiptail --title "Change pom.xml version" --inputbox "Enter the new version:\\n(actual version: $POM_VERSION)" 0 0 "${POM_VERSION:0:-9}" 3>&1 1>&2 2>&3);
-else
-	NEW_POM_VERSION=$(whiptail --title "Change pom.xml version" --inputbox "Enter the new version:\\n(actual version: $POM_VERSION)" 0 0 "$POM_VERSION""-SNAPSHOT" 3>&1 1>&2 2>&3);
-fi
+RELATIVE_DIR=$(dirname $(realpath "$0"));
+NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION");
 
 if [[ "$NEW_POM_VERSION" == ""  ]]; then
 	echo "Cancel operation"
@@ -77,7 +75,6 @@ if [[ "$ACTION_LIST" == ""  ]]; then
 fi
 
 if [[ $ACTION_LIST =~ "9" ]] ; then
-	RELATIVE_DIR=$(dirname $(realpath "$0"));
 	if [ "$($RELATIVE_DIR/is-gh.bash)" -eq 1 ]; then
 		if [ "$(whiptail --yesno "Do you want create a branch based on GitHub issue ?" 0 0 3>&1 1>&2 2>&3 ; echo $?)" -eq 0 ]; then
 			NEW_BRANCH_NAME=$($RELATIVE_DIR/gh-select-issue.sh);
