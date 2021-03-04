@@ -1,0 +1,67 @@
+#!/bin/bash
+#    git-auto-fixup - Create a git commit fixup based on current commit history
+#                     for the current branch before previous ref branch commit
+#    Copyright (C) hdsdi3g for hd3g.tv 2021
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or any
+#    later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+#    Usage: just run this script from a git local repository
+#           you must have a valid setup of:
+#             - git
+#             - perl
+#             - cut
+#             - tac
+#             - whiptail
+#
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD);
+BRANCH_REF=$(git show-branch --list --no-name | grep -v $BRANCH | head -1 | perl -n -e'/\[(.*?)\]/ && print $1');
+LAST_COMMITS=$(git log $BRANCH_REF.. --oneline -n 100 | grep -v "fixup!");
+COMMIT_COUNT=$(git log $BRANCH_REF.. --oneline -n 100 | grep -v "fixup!" | wc -l);
+
+#echo "From $BRANCH, to $BRANCH_REF"
+#echo "$LAST_COMMITS";
+#echo "$COMMIT_COUNT"
+
+if [ $COMMIT_COUNT -eq 1 ]
+then
+	git commit --fixup $(echo "$LAST_COMMITS" | cut -d " " -f 1);
+	exit 0;
+fi
+if [ $COMMIT_COUNT -eq 0 ]
+then
+	echo "No last commits found for $BRANCH";
+	exit 1;
+fi
+
+#get_last_commits | awk '$0="  git commit --fixup "$0' | tac;
+
+cmd=(whiptail --title "Select a commit to fixup" --menu "Last commits for $BRANCH (from $BRANCH_REF):" 0 0 0);
+while IFS= read -r CURRENT_COMMIT; do
+    COMMIT_REF=$(echo "$CURRENT_COMMIT" | cut -d " " -f 1);
+    COMMIT_NAME=$(echo "$CURRENT_COMMIT" | cut -d " " -f 2-);
+	#echo $CURRENT_COMMIT
+	#echo $COMMIT_REF
+	#echo $COMMIT_NAME
+    cmd+=("$COMMIT_REF" "$COMMIT_NAME")
+done <<< "$LAST_COMMITS"
+
+COMMIT=$("${cmd[@]}" 3>&1 1>&2 2>&3);
+
+if [[ $COMMIT == "" ]] ; then
+	echo "Cancel operation"
+	exit 2;
+fi
+
+git commit --fixup $COMMIT
