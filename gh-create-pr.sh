@@ -56,10 +56,10 @@ ISSUE_LABELS=$(cat $ISSUE_VIEW_FILE | grep "labels" | cut -f 2);
 rm "$ISSUE_VIEW_FILE"
 
 gh pr create \
-    --assignee @me \
-    --base $BRANCH_REF \
-    --title $ISSUE_TITLE \
-    --label $ISSUE_LABELS \
+    --assignee "@me" \
+    --base "$BRANCH_REF" \
+    --title "$ISSUE_TITLE" \
+    --label "$ISSUE_LABELS" \
     --body "Close #$ISSUE_REF"
 
 exit 0;
