@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#    gh-select-issue - get Github issue #ref.
+#    gh-create-issue - create a new Github issue, and return #ref
 #    Copyright (C) hdsdi3g for hd3g.tv 2021
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -24,35 +24,27 @@
 
 set -eu
 
-ISSUES=$(NO_COLOR=1 gh issue list --state open --limit 50);
-RELATIVE_DIR=$(dirname $(realpath "$0"));
+ISSUE_NAME=$(whiptail --title "Create GitHub issue" --inputbox "Enter the issue title:" 0 0 3>&1 1>&2 2>&3);
 
-if [ "$(echo $ISSUES | grep OPEN | wc -l)" -eq 0 ]; then
-    $RELATIVE_DIR/gh-create-issue.sh
-	exit 0;
+if [[ "$ISSUE_NAME" == ""  ]]; then
+	echo "No issue name, cancel operation"
+	exit 1;
 fi
 
-cmd=(whiptail --title "Select GitHub issue" --menu "What do you want to work on ?" 0 0 0);
-while IFS= read -r ISSUE; do
-    ISSUE_REF=$(echo "$ISSUE" | cut -f 1);
-    ISSUE_NAME=$(echo "$ISSUE" | cut -f 3);
-    ISSUE_TYPE=$(echo "$ISSUE" | cut -f 4);
-    cmd+=("$ISSUE_REF" "$ISSUE_NAME ($ISSUE_TYPE)")
-done <<< "$ISSUES"
+ISSUE_LABEL=$(whiptail --title "Choose an issue label" --menu \
+	"Select the best label for the new issue:" 0 0 0 \
+	"bug" "Declare a bug issue" \
+	"enhancement" "Propose an enhancement" \
+	"documentation" "Update internal documentation" \
+	3>&1 1>&2 2>&3);
 
-cmd+=("0" "Create new issue...")
-
-set +e
-
-SELECTED_ISSUE=$("${cmd[@]}" 3>&1 1>&2 2>&3);
-
-if [[ "$SELECTED_ISSUE" == ""  ]]; then
-    exit 0;
-fi
-if [[ "$SELECTED_ISSUE" == "0"  ]]; then
-    $RELATIVE_DIR/gh-create-issue.sh
-    exit 0;
+if [[ "$ISSUE_LABEL" == ""  ]]; then
+	echo "No issue label, cancel operation"
+	exit 2;
 fi
 
-echo $SELECTED_ISSUE
+ISSUE_URL=$(gh issue create --assignee @me --title "$ISSUE_NAME" --label $ISSUE_LABEL --body "" | grep -v "Creating issue" | grep "issues")
+
+basename $(echo "$ISSUE_URL")
+
 exit 0;
