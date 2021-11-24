@@ -1,0 +1,45 @@
+# Setup from your .gitconfig 
+# [include]
+#	path = /path/to/alias.gitconfig
+
+[alias]
+	# Checkout
+	co = !git checkout $@ && git-branch-db-add
+	# History
+	lss = log --graph --pretty=format:'%C(yellow)%h %Cblue%an%Cgreen%d %Creset%s' --abbrev-commit --decorate --date=short
+	# Show log (history)
+	sl  = !clear && git lss -n 70 origin/\"$(git rev-parse --abbrev-ref HEAD)\" \"$(git rev-parse --abbrev-ref HEAD)\"
+	# Force push
+	fpush = push --force-with-lease
+	# Force to a temp branch
+	ftemp = !B=\"$(git rev-parse --abbrev-ref HEAD)\" && git co temp && git reset --hard origin/"$B && git fpush && git co $B"
+	# Fetch
+	f = fetch -p
+	# Rebase from origin sprint/master/next/main branches
+	rebsprint = rebase -i origin/sprint --autosquash
+	rebmaster = rebase -i origin/master --autosquash
+	rebnext = rebase -i origin/next --autosquash
+	rebmain = rebase -i origin/main --autosquash
+	# Call autofixup
+	fixup = !git-auto-fixup
+	# Reset hard
+	reseth = reset --hard
+	# Commit amend
+	amend = commit --amend
+	# Checkout sprint/master/next/main branches
+	cosprint = checkout sprint
+	comaster = checkout master
+	comain = checkout main
+	conext = checkout next
+	# Checkout track
+	cotrack = checkout --track
+	open-version = !git add pom.xml && git commit -m \"Open version $(mvn-get-version)\"
+	close-version = !git add pom.xml && git commit -m \"Set version to $(mvn-get-version)\"
+
+#[core]
+#        excludesfile = ~/.gitignore
+#        editor = vi
+#[push]
+#	default = simple
+#[pull]
+#	ff = only
