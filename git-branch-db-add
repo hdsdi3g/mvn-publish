@@ -1,0 +1,8 @@
+#!/bin/bash
+
+git-first-commit-name-branch >> ~/.git-branch-db.txt
+
+cat ~/.git-branch-db.txt | sort | uniq > /tmp/git-branch-db.txt
+
+cat /tmp/git-branch-db.txt > ~/.git-branch-db.txt
+

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$1" ]
+then
+	read -p "Branch name [] " B
+else
+	B="$1";
+fi
+
+[ -z "$B" ] && echo "Cancel operation" && exit 0;
+
+git branch -d $B
+
+exit 0;

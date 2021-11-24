@@ -1,0 +1,4 @@
+#!/bin/bash
+
+git log --oneline -n 100 | grep $(git rev-parse --abbrev-ref HEAD) | grep -v "fixup!" | cut -d " " -f 1 | head -n 1
+

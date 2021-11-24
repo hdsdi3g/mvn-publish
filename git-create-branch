@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$1" ]
+then
+	read -p "New branch name [] " B
+else
+	B="$1";
+fi
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
+if [ -z "$2" ]
+then
+        read -p "New ref branch name [$CURRENT_BRANCH] " RB
+else
+        RB="$2";
+fi
+
+[ -z "$B" ] && echo "Cancel operation" && exit 0;
+
+if [ -z "$RB" ]
+then
+        RB="$CURRENT_BRANCH";
+fi
+
+
+git stash
+git checkout $RB
+git fetch
+git reset --hard origin/$RB
+git checkout -b $B origin/$RB
+git push --set-upstream origin $B
+
+set +e
+git stash pop
+
+exit 0;
