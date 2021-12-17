@@ -116,17 +116,17 @@ if [[ $ACTION_LIST =~ "4" ]] ; then
 	mvn -B clean test
 fi
 if [[ $ACTION_LIST =~ "0" ]] ; then
-	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30
+	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "6" ]] ; then
-	mvn -B clean install
+	mvn -B clean install -Dgpg.skip=false
 	echo "Install locally $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "1a" ]] ; then
-	mvn -B nexus-staging:release -DstagingProgressTimeoutMinutes=30
+	mvn -B nexus-staging:release -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "1b" ]] ; then
-	mvn -B nexus-staging:drop -DstagingProgressTimeoutMinutes=30
+	mvn -B nexus-staging:drop -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 
 addPOM () {
