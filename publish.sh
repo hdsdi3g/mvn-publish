@@ -22,6 +22,7 @@
 #             - mvn
 #             - whiptail
 #             - bc
+#             - gh
 #
 #    Update: you can use shellcheck for validate this script
 #
@@ -38,13 +39,24 @@ git reset --hard
 git pull
 
 POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout);
-
 RELATIVE_DIR=$(dirname $(realpath "$0"));
-NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION");
+
+IS_MAIN_BRANCH="0";
+ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
+if [[ "$ACTUAl_BRANCH" == "main" || "$ACTUAl_BRANCH" == "master" ]]; then
+	IS_MAIN_BRANCH="1";
+fi
+echo $IS_MAIN_BRANCH
+NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION" "$IS_MAIN_BRANCH");
 
 if [[ "$NEW_POM_VERSION" == ""  ]]; then
 	echo "Cancel operation"
 	exit 0;
+fi
+
+if [[ "$NEW_POM_VERSION" == "PR"  ]]; then
+        "$RELATIVE_DIR/gh-create-pr.sh"
+        exit 0;
 fi
 
 if [[ "$NEW_POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
@@ -90,7 +102,6 @@ if [[ $ACTION_LIST =~ "9" ]] ; then
 		NEW_BRANCH_NAME=$(whiptail --title "Create git branch" --inputbox "Enter the new branch name:" 0 0 3>&1 1>&2 2>&3);
 	fi
 
-	ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
 	BRANCH_REF_NAME=$(whiptail --title "From this git branch reference" --inputbox "Enter the actual branch name:" 0 0 "$ACTUAl_BRANCH" 3>&1 1>&2 2>&3);
 	if [[ "$NEW_BRANCH_NAME" == ""  ]]; then
 		echo "No branch name, cancel operation"

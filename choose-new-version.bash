@@ -25,6 +25,7 @@
 set -eu
 
 POM_VERSION="$1";
+IS_MAIN_BRANCH="$2";
 
 if [[ "$POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
 	POM_BASE_VERSION=${POM_VERSION:0:-9};
@@ -47,6 +48,9 @@ if [[ "$POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
     cmd+=("$INCR_PATCH-SNAPSHOT" "Open new patch version")
     cmd+=("$INCR_MAJ" "Close to new major version")
     cmd+=("$INCR_MIN" "Close to new minor version")
+    if [[ "$IS_MAIN_BRANCH" == "0" ]]; then
+        cmd+=("PR" "Create a new GitHub Pull Request for this branch")
+    fi
 else
     cmd+=("$POM_VERSION" "Keep current version")
     cmd+=("$INCR_MAJ-SNAPSHOT" "Open new major version")

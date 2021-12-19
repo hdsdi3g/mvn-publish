@@ -52,7 +52,7 @@ exec 3>"$ISSUE_VIEW_FILE"
 
 NO_COLOR=1 gh issue view $ISSUE_REF > $ISSUE_VIEW_FILE
 ISSUE_TITLE=$(cat $ISSUE_VIEW_FILE | head -1 | cut -f 2);
-ISSUE_LABELS=$(cat $ISSUE_VIEW_FILE | grep "labels" | cut -f 2);
+ISSUE_LABELS=$(cat $ISSUE_VIEW_FILE | grep "labels" | cut -f 2 | cut -f 1 -d ",");
 rm "$ISSUE_VIEW_FILE"
 
 gh pr create \
