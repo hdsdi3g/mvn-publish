@@ -46,7 +46,6 @@ ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
 if [[ "$ACTUAl_BRANCH" == "main" || "$ACTUAl_BRANCH" == "master" ]]; then
 	IS_MAIN_BRANCH="1";
 fi
-echo $IS_MAIN_BRANCH
 NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION" "$IS_MAIN_BRANCH");
 
 if [[ "$NEW_POM_VERSION" == ""  ]]; then
