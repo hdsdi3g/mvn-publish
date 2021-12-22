@@ -1,0 +1,12 @@
+#!/bin/bash
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
+git show-branch --list --no-name --remotes | \
+	grep "origin" | \
+	grep -v "$CURRENT_BRANCH" | \
+	grep -v "HEAD" | \
+	head -1 | \
+	perl -n -e'/\[(.*?)\]/ && print $1' | \
+	cut -d "/" -f 2
+
+

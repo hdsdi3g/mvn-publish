@@ -35,7 +35,8 @@ if [ "$PR_STATUS" -eq 1 ]; then
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD);
-BRANCH_REF=$(git show-branch --list --no-name | grep -v $BRANCH | head -1 | perl -n -e'/\[(.*?)\]/ && print $1');
+RELATIVE_DIR=$(dirname $(realpath "$0"));
+BRANCH_REF=$($RELATIVE_DIR/git-get-base-branch);
 if [[ "$BRANCH_REF" == ""  ]]; then
     echo "Can't found a branch ref..."
     exit 1;

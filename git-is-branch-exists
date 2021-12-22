@@ -1,0 +1,7 @@
+#!/bin/bash
+
+git rev-parse --verify "$1" --quiet > /dev/null 2> /dev/null
+
+echo $?;
+
+exit 0;

@@ -46,6 +46,7 @@ ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
 if [[ "$ACTUAl_BRANCH" == "main" || "$ACTUAl_BRANCH" == "master" ]]; then
 	IS_MAIN_BRANCH="1";
 fi
+BASE_BRANCH=$("$RELATIVE_DIR/git-get-base-branch");
 NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION" "$IS_MAIN_BRANCH");
 
 if [[ "$NEW_POM_VERSION" == ""  ]]; then
@@ -71,12 +72,15 @@ else
 	"What do you want to do with current $NEW_POM_VERSION?" 0 0 4 \
 	"4" "Clean and test" OFF \
 	"6" "Install locally" OFF \
+	"12" "Verify current PR status" ON \
 	"0" "Clean, test and deploy" ON \
 	"1a" "Staging release" ON \
 	"2" "Commit new pom.xml" ON \
 	"3" "Tag" ON \
 	"7" "Git push" ON \
 	"8" "Git push tags" ON \
+	"10" "Git merge $ACTUAl_BRANCH to [$BASE_BRANCH]" OFF \
+	"11" "Git delete local $ACTUAl_BRANCH" OFF \
 	"1b" "Drop release" OFF \
 	3>&1 1>&2 2>&3);
 fi
@@ -85,7 +89,7 @@ if [[ "$ACTION_LIST" == ""  ]]; then
         echo "No selected items, cancel operation"
 fi
 
-if [[ $ACTION_LIST =~ "9" ]] ; then
+if [[ "$ACTION_LIST" =~ "9" ]] ; then
 	if [ "$($RELATIVE_DIR/is-gh.bash)" -eq 1 ]; then
 		if [ "$(whiptail --yesno "Do you want create a branch based on GitHub issue ?" 0 0 3>&1 1>&2 2>&3 ; echo $?)" -eq 0 ]; then
 			NEW_BRANCH_NAME=$($RELATIVE_DIR/gh-select-issue.sh);
@@ -113,6 +117,18 @@ if [[ $ACTION_LIST =~ "9" ]] ; then
 	git checkout -b "$NEW_BRANCH_NAME" "origin/$BRANCH_REF_NAME"
 	git push --set-upstream origin "$NEW_BRANCH_NAME"
 fi
+
+if [[ "$ACTION_LIST" =~ "12" ]] ; then
+	gh pr status
+	gh pr checks
+	read -p "Continue script ? [y] " CONTINUE_SCRIPT
+	if [ "$CONTINUE_SCRIPT" != "y" ]; then
+		if [ "$CONTINUE_SCRIPT" != "" ]; then
+			exit 0;
+		fi
+	fi
+fi
+
 
 if [[ "$POM_VERSION" == "$NEW_POM_VERSION"  ]]; then
 	echo "Don't change pom version..."
@@ -173,4 +189,28 @@ if [[ $ACTION_LIST =~ "7" ]] ; then
 fi
 if [[ $ACTION_LIST =~ "8" ]] ; then
 	git push --tags
+fi
+
+if [[ $IS_MAIN_BRANCH == "0" ]] ; then
+	if [[ $ACTION_LIST =~ "10" ]] ; then
+		# Git merge to base branch
+       	git co "$BASE_BRANCH"
+		git merge "$ACTUAl_BRANCH"
+		echo "Merge to local $BASE_BRANCH is done. You can now push to distant $BASE_BRANCH and/or rebase before."
+        if [[ $ACTION_LIST =~ "11" ]] ; then
+			# Git delete current branch
+			"$RELATIVE_DIR/git-delete-local-branch" "$ACTUAl_BRANCH"
+        fi
+	else
+        if [[ $ACTION_LIST =~ "11" ]] ; then
+			echo "Can't delete a non-merged branch ($ACTUAl_BRANCH).";
+        fi
+	fi
+else
+	if [[ $ACTION_LIST =~ "10" ]] ; then
+		echo "Can't merge current branch: you're in a current base branch"
+	fi
+	if [[ $ACTION_LIST =~ "11" ]] ; then
+		echo "Can't delete current branch: you're in a current base branch"
+	fi
 fi
