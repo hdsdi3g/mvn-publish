@@ -1,12 +1,19 @@
 #!/bin/bash
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
-git show-branch --list --no-name --remotes | \
-	grep "origin" | \
-	grep -v "$CURRENT_BRANCH" | \
-	grep -v "HEAD" | \
-	head -1 | \
-	perl -n -e'/\[(.*?)\]/ && print $1' | \
-	cut -d "/" -f 2
+#git show-branch --list --no-name --remotes | \
+#	grep "origin" | \
+#	grep -v "$CURRENT_BRANCH" | \
+#	grep -v "HEAD" | \
+#	perl -n -e'/\[(.*?)\]/ && print $1' | \
+#	cut -d "/" -f 2
 
+# git log --pretty=format:'%d' --decorate --date=short -n 70 origin/"$(git rev-parse --abbrev-ref HEAD)" "$(git rev-parse --abbrev-ref HEAD)" | grep "\S" | grep origin | head -2 | tail -1
 
+# https://stackoverflow.com/questions/3161204/how-to-find-the-nearest-parent-of-a-git-branch/17843908#17843908
+git show-branch \
+	| sed "s/].*//" \
+	| grep "\*" \
+	| grep -v "$CURRENT_BRANCH" \
+	| head -n1 \
+	| sed "s/^.*\[//"

@@ -47,7 +47,7 @@ if [[ "$ACTUAl_BRANCH" == "main" || "$ACTUAl_BRANCH" == "master" ]]; then
 	IS_MAIN_BRANCH="1";
 fi
 BASE_BRANCH=$("$RELATIVE_DIR/git-get-base-branch");
-NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION" "$IS_MAIN_BRANCH");
+NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION" "$IS_MAIN_BRANCH" "$ACTUAl_BRANCH");
 
 if [[ "$NEW_POM_VERSION" == ""  ]]; then
 	echo "Cancel operation"
@@ -60,33 +60,41 @@ if [[ "$NEW_POM_VERSION" == "PR"  ]]; then
 fi
 
 if [[ "$NEW_POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
-	ACTION_LIST=$(whiptail --title "Confirm actions" --checklist \
-	"What do you want to do with new $NEW_POM_VERSION?" 0 0 4 \
-	"4" "Clean and test" OFF \
-	"6" "Install locally" OFF \
-	"9" "Create git branch" OFF \
-	"5" "Commit new pom.xml" ON \
-	"7" "Git push" ON 3>&1 1>&2 2>&3);
+	cmd=(whiptail --title "Confirm actions" --checklist "What do you want to do with new $NEW_POM_VERSION?" 0 0 4);
+	cmd+=("4" "Clean and test" OFF);
+	cmd+=("6" "Install locally" OFF);
+	cmd+=("9" "Create git branch" OFF);
+	cmd+=("5" "Commit new pom.xml" ON);
+	cmd+=("7" "Git push" ON);
+	ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
 else
-	ACTION_LIST=$(whiptail --title "Confirm actions" --checklist \
-	"What do you want to do with current $NEW_POM_VERSION?" 0 0 4 \
-	"4" "Clean and test" OFF \
-	"6" "Install locally" OFF \
-	"12" "Verify current PR status" ON \
-	"0" "Clean, test and deploy" ON \
-	"1a" "Staging release" ON \
-	"2" "Commit new pom.xml" ON \
-	"3" "Tag" ON \
-	"7" "Git push" ON \
-	"8" "Git push tags" ON \
-	"10" "Git merge $ACTUAl_BRANCH to [$BASE_BRANCH]" OFF \
-	"11" "Git delete local $ACTUAl_BRANCH" OFF \
-	"1b" "Drop release" OFF \
-	3>&1 1>&2 2>&3);
+	cmd=(whiptail --title "Confirm actions" --checklist "What do you want to do with current $NEW_POM_VERSION?" 0 0 4);
+	cmd+=("4" "Clean and test" OFF);
+	cmd+=("6" "Install locally" OFF);
+	if [[ "$BASE_BRANCH" != "" ]]; then
+		cmd+=("12" "Verify current PR status" ON);
+	fi
+	cmd+=("1c" "Clean, test and deploy" ON);
+	cmd+=("1a" "Staging release" ON);
+	cmd+=("2" "Commit new pom.xml" ON);
+	cmd+=("3" "Tag" ON);
+	cmd+=("7" "Git push" ON);
+	cmd+=("8" "Git push tags" ON);
+	if [[ "$BASE_BRANCH" != "" ]]; then
+		cmd+=("10" "Git merge $ACTUAl_BRANCH to $BASE_BRANCH" OFF);
+		cmd+=("11" "Git delete local $ACTUAl_BRANCH" OFF);
+	fi
+	cmd+=("1b" "Drop release" OFF);
+	ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
 fi
 
 if [[ "$ACTION_LIST" == ""  ]]; then
-        echo "No selected items, cancel operation"
+    echo "No selected items, cancel operation"
+	exit 0;
+fi
+
+if [[ "$ACTION_LIST" =~ "4" ]] ; then
+	mvn -B clean test
 fi
 
 if [[ "$ACTION_LIST" =~ "9" ]] ; then
@@ -138,10 +146,7 @@ else
 	find . -type f -name pom.xml.versionsBackup -delete
 fi
 
-if [[ $ACTION_LIST =~ "4" ]] ; then
-	mvn -B clean test
-fi
-if [[ $ACTION_LIST =~ "0" ]] ; then
+if [[ $ACTION_LIST =~ "1c" ]] ; then
 	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "6" ]] ; then
