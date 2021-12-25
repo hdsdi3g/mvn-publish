@@ -77,12 +77,13 @@ else
 	cmd+=("1c" "Clean, test and deploy" ON);
 	cmd+=("1a" "Staging release" ON);
 	cmd+=("2" "Commit new pom.xml" ON);
-	cmd+=("3" "Tag" ON);
-	cmd+=("7" "Git push" ON);
-	cmd+=("8" "Git push tags" ON);
+	cmd+=("3" "Git tag to $NEW_POM_VERSION" ON);
+	cmd+=("7" "Git push pom on $ACTUAl_BRANCH" ON);
+	cmd+=("8" "Git push tag" ON);
 	if [[ "$BASE_BRANCH" != "" ]]; then
-		cmd+=("10" "Git merge $ACTUAl_BRANCH to $BASE_BRANCH" OFF);
-		cmd+=("11" "Git delete local $ACTUAl_BRANCH" OFF);
+		cmd+=("10" "Git merge $ACTUAl_BRANCH to $BASE_BRANCH" ON);
+		cmd+=("11" "Git delete local $ACTUAl_BRANCH" ON);
+		cmd+=("13" "Git (final) push to $BASE_BRANCH" ON);
 	fi
 	cmd+=("1b" "Drop release" OFF);
 	ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
@@ -129,12 +130,12 @@ fi
 if [[ "$ACTION_LIST" =~ "12" ]] ; then
 	gh pr status
 	gh pr checks
-	read -p "Continue script ? [y] " CONTINUE_SCRIPT
-	if [ "$CONTINUE_SCRIPT" != "y" ]; then
-		if [ "$CONTINUE_SCRIPT" != "" ]; then
-			exit 0;
-		fi
-	fi
+	#read -p "Continue script ? [y] " CONTINUE_SCRIPT
+	#if [ "$CONTINUE_SCRIPT" != "y" ]; then
+	#	if [ "$CONTINUE_SCRIPT" != "" ]; then
+	#		exit 0;
+	#	fi
+	#fi
 fi
 
 
@@ -199,17 +200,24 @@ fi
 if [[ $IS_MAIN_BRANCH == "0" ]] ; then
 	if [[ $ACTION_LIST =~ "10" ]] ; then
 		# Git merge to base branch
-       	git co "$BASE_BRANCH"
+		git co "$BASE_BRANCH"
 		git merge "$ACTUAl_BRANCH"
 		echo "Merge to local $BASE_BRANCH is done. You can now push to distant $BASE_BRANCH and/or rebase before."
-        if [[ $ACTION_LIST =~ "11" ]] ; then
+		if [[ $ACTION_LIST =~ "11" ]] ; then
 			# Git delete current branch
 			"$RELATIVE_DIR/git-delete-local-branch" "$ACTUAl_BRANCH"
-        fi
+		fi
+		if [[ $ACTION_LIST =~ "13" ]] ; then
+			# Git push to base branch
+			git push
+		fi
 	else
-        if [[ $ACTION_LIST =~ "11" ]] ; then
+		if [[ $ACTION_LIST =~ "11" ]] ; then
 			echo "Can't delete a non-merged branch ($ACTUAl_BRANCH).";
-        fi
+		fi
+		if [[ $ACTION_LIST =~ "13" ]] ; then
+			echo "Nothing to push";
+		fi
 	fi
 else
 	if [[ $ACTION_LIST =~ "10" ]] ; then
@@ -217,5 +225,8 @@ else
 	fi
 	if [[ $ACTION_LIST =~ "11" ]] ; then
 		echo "Can't delete current branch: you're in a current base branch"
+	fi
+	if [[ $ACTION_LIST =~ "13" ]] ; then
+		echo "Can't push to final branch: you're in a current base branch"
 	fi
 fi
