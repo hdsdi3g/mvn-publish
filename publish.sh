@@ -71,7 +71,7 @@ else
 	cmd=(whiptail --title "Confirm actions" --checklist "What do you want to do with current $NEW_POM_VERSION?" 0 0 4);
 	cmd+=("4" "Clean and test" OFF);
 	cmd+=("6" "Install locally" OFF);
-	if [[ "$BASE_BRANCH" != "" ]]; then
+	if [[ "$BASE_BRANCH" != "" && "$ACTUAl_BRANCH" != "master" && "$ACTUAl_BRANCH" != "main" ]]; then
 		cmd+=("12" "Verify current PR status" ON);
 	fi
 	cmd+=("1c" "Clean, test and deploy" ON);
@@ -80,7 +80,7 @@ else
 	cmd+=("3" "Git tag to $NEW_POM_VERSION" ON);
 	cmd+=("7" "Git push pom on $ACTUAl_BRANCH" ON);
 	cmd+=("8" "Git push tag" ON);
-	if [[ "$BASE_BRANCH" != "" ]]; then
+	if [[ "$BASE_BRANCH" != "" && "$ACTUAl_BRANCH" != "master" && "$ACTUAl_BRANCH" != "main"  ]]; then
 		cmd+=("10" "Git merge $ACTUAl_BRANCH to $BASE_BRANCH" ON);
 		cmd+=("11" "Git delete local $ACTUAl_BRANCH" ON);
 		cmd+=("13" "Git (final) push to $BASE_BRANCH" ON);
