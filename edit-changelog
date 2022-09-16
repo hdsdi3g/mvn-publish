@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#    Usage: just run this script from git repository
+#           you must have a valid setup of:
+#             - git
+#             - sensible-editor
+
+CHANGELOGFILE="CHANGELOG.md";
+
+if ! [ -f "$CHANGELOGFILE" ]; then
+    echo "No changelog for this project";
+	exit 1;
+fi
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD);
+BRANCH_REF=$(git show-branch --list --no-name | grep -v "$BRANCH" | head -1 | perl -n -e'/\[(.*?)\]/ && print $1');
+
+TEMP_FILE=$(mktemp);
+{
+  git log "$BRANCH_REF".. --oneline -n 100
+  echo "======================="
+  cat "$CHANGELOGFILE"
+} >> "$TEMP_FILE"
+
+cat "$TEMP_FILE" > "$CHANGELOGFILE"
+
+sensible-editor "$CHANGELOGFILE"
+git diff CHANGELOG.md
+
+echo ""
+
+read -r -p "Are you ok with this edit? (y/n) [y] " CONFIRM
+
+if [[ "$CONFIRM" == "y" || "$CONFIRM" == "" ]]; then
+    exit 0;
+fi
+
+git co "$CHANGELOGFILE" 2> /dev/null
+
+echo "Cancel operation";
+exit 1;

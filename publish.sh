@@ -28,6 +28,7 @@
 #
 
 set -eu
+CHANGELOGFILE="CHANGELOG.md";
 
 if [ ! -f "pom.xml" ]; then
 	echo "Can't found pom.xml in this directory" >&2;
@@ -35,7 +36,7 @@ if [ ! -f "pom.xml" ]; then
 fi
 
 git fetch -p
-git reset --hard
+git reset
 git pull
 
 POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout);
@@ -49,14 +50,14 @@ fi
 BASE_BRANCH=$("$RELATIVE_DIR/git-get-base-branch");
 NEW_POM_VERSION=$("$RELATIVE_DIR/choose-new-version.bash" "$POM_VERSION" "$IS_MAIN_BRANCH" "$ACTUAl_BRANCH");
 
-if [[ "$NEW_POM_VERSION" == ""  ]]; then
+if [[ "$NEW_POM_VERSION" == "" ]]; then
 	echo "Cancel operation"
 	exit 0;
 fi
 
-if [[ "$NEW_POM_VERSION" == "PR"  ]]; then
-        "$RELATIVE_DIR/gh-create-pr.sh"
-        exit 0;
+if [[ "$NEW_POM_VERSION" == "PR" ]]; then
+	"$RELATIVE_DIR/gh-create-pr.sh"
+	exit 0;
 fi
 
 if [[ "$NEW_POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
@@ -76,9 +77,12 @@ else
 	fi
 	cmd+=("1c" "Clean, test and deploy" ON);
 	cmd+=("1a" "Staging release" ON);
+	if [ -f "$CHANGELOGFILE" ]; then
+		cmd+=("14" "Edit $CHANGELOGFILE" ON);
+	fi
 	cmd+=("2" "Commit new pom.xml" ON);
 	cmd+=("3" "Git tag to $NEW_POM_VERSION" ON);
-	cmd+=("7" "Git push pom on $ACTUAl_BRANCH" ON);
+	cmd+=("7" "Git push $ACTUAl_BRANCH" ON);
 	cmd+=("8" "Git push tag" ON);
 	if [[ "$BASE_BRANCH" != "" && "$ACTUAl_BRANCH" != "master" && "$ACTUAl_BRANCH" != "main"  ]]; then
 		cmd+=("10" "Git merge $ACTUAl_BRANCH to $BASE_BRANCH" ON);
@@ -92,6 +96,10 @@ fi
 if [[ "$ACTION_LIST" == ""  ]]; then
     echo "No selected items, cancel operation"
 	exit 0;
+fi
+
+if [[ "$ACTION_LIST" =~ "14" ]] ; then
+	edit-changelog;
 fi
 
 if [[ "$ACTION_LIST" =~ "4" ]] ; then
@@ -130,14 +138,11 @@ fi
 if [[ "$ACTION_LIST" =~ "12" ]] ; then
 	gh pr status
 	gh pr checks
-	#read -p "Continue script ? [y] " CONTINUE_SCRIPT
-	#if [ "$CONTINUE_SCRIPT" != "y" ]; then
-	#	if [ "$CONTINUE_SCRIPT" != "" ]; then
-	#		exit 0;
-	#	fi
-	#fi
 fi
 
+if [[ "$ACTION_LIST" =~ "14" ]] ; then
+	git add "$CHANGELOGFILE";
+fi
 
 if [[ "$POM_VERSION" == "$NEW_POM_VERSION"  ]]; then
 	echo "Don't change pom version..."
