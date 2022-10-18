@@ -76,7 +76,8 @@ else
 	if [[ "$BASE_BRANCH" != "" && "$ACTUAl_BRANCH" != "master" && "$ACTUAl_BRANCH" != "main" ]]; then
 		cmd+=("12" "Verify current PR status" ON);
 	fi
-	cmd+=("1c" "Clean, test and deploy" ON);
+	cmd+=("1c" "Clean, deploy" ON);
+	cmd+=("1d" "Clean, test and deploy" OFF);
 	cmd+=("1a" "Staging release" ON);
 	if [ -f "$CHANGELOGFILE" ]; then
 		cmd+=("14" "Edit $CHANGELOGFILE" ON);
@@ -154,7 +155,10 @@ else
 fi
 
 if [[ $ACTION_LIST =~ "1c" ]] ; then
-	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
+	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false -DskipTests=true
+fi
+if [[ $ACTION_LIST =~ "1d" ]] ; then
+        mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "6" ]] ; then
 	mvn -B clean install -Dgpg.skip=false
