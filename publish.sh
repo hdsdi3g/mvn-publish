@@ -29,6 +29,7 @@
 
 set -eu
 CHANGELOGFILE="CHANGELOG.md";
+export JAVA_HOME=$(dirname $(dirname $(realpath $(command -v java))));
 
 if [ ! -f "pom.xml" ]; then
 	echo "Can't found pom.xml in this directory" >&2;
