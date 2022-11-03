@@ -78,7 +78,7 @@ else
 	fi
 	cmd+=("1c" "Clean, deploy" ON);
 	cmd+=("1d" "Clean, test and deploy" OFF);
-	cmd+=("1a" "Staging release" ON);
+	cmd+=("1a" "Staging release" OFF);
 	if [ -f "$CHANGELOGFILE" ]; then
 		cmd+=("14" "Edit $CHANGELOGFILE" ON);
 	fi
@@ -105,7 +105,7 @@ if [[ "$ACTION_LIST" =~ "14" ]] ; then
 fi
 
 if [[ "$ACTION_LIST" =~ "4" ]] ; then
-	mvn -B clean test
+	mvn clean test
 fi
 
 if [[ "$ACTION_LIST" =~ "9" ]] ; then
@@ -150,25 +150,25 @@ if [[ "$POM_VERSION" == "$NEW_POM_VERSION"  ]]; then
 	echo "Don't change pom version..."
 else
 	echo "Change the version in pom.xml...";
-	mvn -B versions:set -DnewVersion="$NEW_POM_VERSION" -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN
+	mvn versions:set -DnewVersion="$NEW_POM_VERSION" -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN
 	find . -type f -name pom.xml.versionsBackup -delete
 fi
 
 if [[ $ACTION_LIST =~ "1c" ]] ; then
-	mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false -DskipTests=true
+	mvn clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false -DskipTests=true -Dmaven.test.skip=true
 fi
 if [[ $ACTION_LIST =~ "1d" ]] ; then
-        mvn -B clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
+        mvn clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "6" ]] ; then
-	mvn -B clean install -Dgpg.skip=false
+	mvn clean install -Dgpg.skip=false
 	echo "Install locally $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "1a" ]] ; then
-	mvn -B nexus-staging:release -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
+	mvn nexus-staging:release -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "1b" ]] ; then
-	mvn -B nexus-staging:drop -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
+	mvn nexus-staging:drop -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 
 addPOM () {
