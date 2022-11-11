@@ -155,7 +155,7 @@ else
 fi
 
 if [[ $ACTION_LIST =~ "1c" ]] ; then
-	mvn clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false -DskipTests=true -Djacoco.skip=true
+	mvn clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false -DskipTests=true -Djacoco.skip=true -Dmaven.test.skip
 fi
 if [[ $ACTION_LIST =~ "1d" ]] ; then
         mvn clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
