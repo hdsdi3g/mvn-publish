@@ -50,6 +50,7 @@ if [[ "$POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
     cmd+=("$INCR_PATCH-SNAPSHOT" "Open new patch version")
     cmd+=("$INCR_MIN-SNAPSHOT" "Open new minor version")
     cmd+=("$INCR_MAJ-SNAPSHOT" "Open new major version")
+    cmd+=("$INCR_PATCH" "Close to new patch version")
     cmd+=("$INCR_MIN" "Close to new minor version")
     cmd+=("$INCR_MAJ" "Close to new major version")
 else
