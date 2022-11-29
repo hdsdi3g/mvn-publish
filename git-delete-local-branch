@@ -11,6 +11,6 @@ fi
 
 [ -z "$B" ] && echo "Cancel operation" && exit 0;
 
-git branch -d $B
+git branch -D -d $B
 
 exit 0;
