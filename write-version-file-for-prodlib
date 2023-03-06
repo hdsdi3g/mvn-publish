@@ -1,0 +1,13 @@
+#!/bin/bash
+
+PRODLIB_VERSION_FILE="$1";
+VERSION="$2";
+
+if [ ! -f "env-version/pom.xml" ]; then
+	exit 0;
+fi
+
+echo "Write version $VERSION to file $PRODLIB_VERSION_FILE"
+
+mkdir -p "$(dirname "$PRODLIB_VERSION_FILE")"
+echo "$VERSION" > "$PRODLIB_VERSION_FILE"

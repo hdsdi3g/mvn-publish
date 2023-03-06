@@ -29,6 +29,7 @@
 
 set -eu
 CHANGELOGFILE="CHANGELOG.md";
+PRODLIB_VERSION_FILE="env-version/src/main/resources/prodlib-version.txt";
 export JAVA_HOME=$(dirname $(dirname $(realpath $(command -v java))));
 
 if [ ! -f "pom.xml" ]; then
@@ -152,6 +153,7 @@ else
 	echo "Change the version in pom.xml...";
 	mvn versions:set -DnewVersion="$NEW_POM_VERSION" -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN
 	find . -type f -name pom.xml.versionsBackup -delete
+	write-version-file-for-prodlib "$PRODLIB_VERSION_FILE" "$NEW_POM_VERSION"
 fi
 
 if [[ $ACTION_LIST =~ "1c" ]] ; then
@@ -176,6 +178,10 @@ addPOM () {
 	if [ "$(find . -type f -name pom.xml -printf '.' | wc -c)" -gt 1 ]; then
 		git add "./**/pom.xml"
 	fi
+	if [ -f "$PRODLIB_VERSION_FILE" ]; then
+		git add "$PRODLIB_VERSION_FILE"
+	fi
+	
 }
 
 addTHIRDPARTY () {
