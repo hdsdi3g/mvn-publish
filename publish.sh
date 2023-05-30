@@ -163,7 +163,7 @@ if [[ $ACTION_LIST =~ "1d" ]] ; then
         mvn clean deploy -DstagingProgressTimeoutMinutes=30 -Dgpg.skip=false
 fi
 if [[ $ACTION_LIST =~ "6" ]] ; then
-	mvn clean install -Dgpg.skip=false
+	mvn clean install -Dgpg.skip=false -DskipTests=true
 	echo "Install locally $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "1a" ]] ; then
