@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+#    publish-fash - simples and instants shortcuts for Git and Maven in an interactive script
+#    Copyright (C) hdsdi3g for hd3g.tv 2023
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or any
+#    later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+#    Usage: just run this script from a maven and git repository
+#           you must have a valid setup of:
+#             - git
+#             - mvn
+#             - whiptail
+#
+#    Update: you can use shellcheck for validate this script
+#
+
+set -eu
+
+cmd=(whiptail --title "Fast dev menu" --menu "What do you want to do now?" 0 0 0);
+cmd+=("1" "git reset/fetch/pull");
+cmd+=("2" "mvn test");
+cmd+=("3" "mvn install");
+cmd+=("4" "mvn package native");
+cmd+=("0" "publish.sh");
+ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
+
+if [[ "$ACTION_LIST" =~ "1" ]] ; then
+	git fetch -p
+    git reset --hard
+    git pull
+fi
+
+if [[ "$ACTION_LIST" =~ "2" ]] ; then
+    mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dgpg.skip=true -Dmaven.javadoc.skip=true
+fi
+
+if [[ "$ACTION_LIST" =~ "3" ]] ; then
+    mvn clean install -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dmaven.javadoc.skip=true
+fi
+
+if [[ "$ACTION_LIST" =~ "4" ]] ; then
+    mvn -Pnative clean package -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+fi
+
+if [[ "$ACTION_LIST" =~ "0" ]] ; then
+	publish.sh
+fi

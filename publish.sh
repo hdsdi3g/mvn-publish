@@ -106,7 +106,7 @@ if [[ "$ACTION_LIST" =~ "14" ]] ; then
 fi
 
 if [[ "$ACTION_LIST" =~ "4" ]] ; then
-	mvn clean test -Djacoco.skip=true
+	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false
 fi
 
 if [[ "$ACTION_LIST" =~ "9" ]] ; then
