@@ -32,27 +32,33 @@ cmd+=("1" "git reset/fetch/pull");
 cmd+=("2" "mvn test");
 cmd+=("3" "mvn install");
 cmd+=("4" "mvn package native");
+cmd+=("9" "Purge old SNAPSHOTS");
 cmd+=("0" "publish.sh");
 ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
 
 if [[ "$ACTION_LIST" =~ "1" ]] ; then
 	git fetch -p
-    git reset --hard
-    git pull
+	git reset --hard
+	git pull
 fi
 
 if [[ "$ACTION_LIST" =~ "2" ]] ; then
-    mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dgpg.skip=true -Dmaven.javadoc.skip=true
+	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dgpg.skip=true -Dmaven.javadoc.skip=true
 fi
 
 if [[ "$ACTION_LIST" =~ "3" ]] ; then
-    mvn clean install -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dmaven.javadoc.skip=true
+	mvn clean install -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dmaven.javadoc.skip=true
 fi
 
 if [[ "$ACTION_LIST" =~ "4" ]] ; then
-    mvn -Pnative clean package -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+	mvn -Pnative clean package -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+fi
+
+if [[ "$ACTION_LIST" =~ "9" ]] ; then
+	find "$HOME/.m2/repository" -type d -name "*SNAPSHOT" -exec rm -rf {} \; 2> /dev/null
 fi
 
 if [[ "$ACTION_LIST" =~ "0" ]] ; then
 	publish.sh
 fi
+
