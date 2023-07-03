@@ -25,7 +25,7 @@ git pull
 if (whiptail --title "Install globally all projects" --yesno "Do you want to do skip the global install for alls current projects?" 0 0); then
     echo "";
 else
-    mvn clean install -Dgpg.skip=false -DskipTests=true -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dmaven.javadoc.skip=true
+    mvn clean install -Dgpg.skip=false -DskipTests=true -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN -Dmaven.javadoc.skip=true -Dlicense.skipAddThirdParty=true
 fi
 
 LAST_RUN_TEST_FILE="last-run-mvn-tests";
@@ -72,6 +72,6 @@ echo "1" > "$SELECTED_PROJECT/target/$LAST_RUN_TEST_FILE";
 
 echo "$SELECTED_PROJECT";
 
-mvn test -pl "$SELECTED_PROJECT"
+mvn test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dgpg.skip=true -Dmaven.javadoc.skip=true  -pl "$SELECTED_PROJECT"
 
 exit 0;
