@@ -32,6 +32,7 @@ cmd+=("1" "git reset/fetch/pull");
 cmd+=("2" "mvn test");
 cmd+=("3" "mvn install");
 cmd+=("4" "mvn package native");
+cmd+=("5" "GitHub create PR");
 cmd+=("9" "Purge old SNAPSHOTS");
 cmd+=("0" "publish.sh");
 ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
@@ -52,6 +53,10 @@ fi
 
 if [[ "$ACTION_LIST" =~ "4" ]] ; then
 	mvn -Pnative clean package -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+fi
+
+if [[ "$ACTION_LIST" =~ "5" ]] ; then
+	gh-create-pr.sh
 fi
 
 if [[ "$ACTION_LIST" =~ "9" ]] ; then
