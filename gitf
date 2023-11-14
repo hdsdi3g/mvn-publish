@@ -37,7 +37,7 @@ cmd+=("gh pr" "GitHub create PR");
 cmd+=("rm repository" "Purge old SNAPSHOTS");
 ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
 
-if [[ "$ACTION_LIST" =~ "git reset/fetch/pull" ]] ; then
+if [[ "$ACTION_LIST" =~ "git fetch/pull" ]] ; then
 	git fetch -p
 	# git reset --hard
 	git pull
