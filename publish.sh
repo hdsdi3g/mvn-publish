@@ -67,7 +67,7 @@ if [[ "$NEW_POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
 	cmd+=("4" "Clean and test" OFF);
 	cmd+=("6" "Install locally" OFF);
 	cmd+=("9" "Create git branch" OFF);
-	cmd+=("5" "Commit new pom.xml" ON);
+	cmd+=("5" "Commit new pom.xml (and auto-generated files)" ON);
 	cmd+=("7" "Git push" ON);
 	ACTION_LIST=$("${cmd[@]}" 3>&1 1>&2 2>&3);
 else
@@ -83,7 +83,7 @@ else
 	if [ -f "$CHANGELOGFILE" ]; then
 		cmd+=("14" "Edit $CHANGELOGFILE" ON);
 	fi
-	cmd+=("2" "Commit new pom.xml" ON);
+	cmd+=("2" "Commit new pom.xml (and auto-generated files)" ON);
 	cmd+=("3" "Git tag to $NEW_POM_VERSION" ON);
 	cmd+=("7" "Git push $ACTUAl_BRANCH" ON);
 	cmd+=("8" "Git push tag" ON);
@@ -193,14 +193,22 @@ addTHIRDPARTY () {
 	fi
 }
 
+addDocs () {
+	if [ -d "docs" ]; then
+		git add docs
+	fi
+}
+
 if [[ $ACTION_LIST =~ "5" ]] ; then
 	addPOM
 	addTHIRDPARTY
+	addDocs
 	git commit -m "Open version $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "2" ]] ; then
 	addPOM
 	addTHIRDPARTY
+	addDocs
 	git commit -m "Set version $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "3" ]] ; then
