@@ -193,22 +193,25 @@ addTHIRDPARTY () {
 	fi
 }
 
-addDocs () {
+addDocsReadme () {
 	if [ -d "docs" ]; then
 		git add docs
+	fi
+	if [ -f "README.md" ]; then
+		git add README.md
 	fi
 }
 
 if [[ $ACTION_LIST =~ "5" ]] ; then
 	addPOM
 	addTHIRDPARTY
-	addDocs
+	addDocsReadme
 	git commit -m "Open version $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "2" ]] ; then
 	addPOM
 	addTHIRDPARTY
-	addDocs
+	addDocsReadme
 	git commit -m "Set version $NEW_POM_VERSION"
 fi
 if [[ $ACTION_LIST =~ "3" ]] ; then
