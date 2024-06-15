@@ -31,6 +31,7 @@ cmd=(whiptail --title "Fast dev menu" --menu "What do you want to do now?" 0 0 0
 cmd+=("git fetch/pull" "Update the git repo without reset it");
 cmd+=("mvn test" "Maven test");
 cmd+=("mvn clean" "Maven clean");
+cmd+=("mvn test parallel" "Maven parallel test");
 cmd+=("mvn install" "Maven install");
 cmd+=("mvn package native" "Maven package native-image");
 cmd+=("gh pr" "GitHub create PR");
@@ -43,8 +44,13 @@ if [[ "$ACTION_LIST" =~ "git fetch/pull" ]] ; then
 	git pull
 fi
 
-if [[ "$ACTION_LIST" =~ "mvn test" ]] ; then
-	mvn test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dgpg.skip=true -Dmaven.javadoc.skip=true
+PARALLEL="";
+if [[ "$ACTION_LIST" == *"parallel"* ]] ; then
+        PARALLEL="-T 1C";
+fi
+
+if [[ "$ACTION_LIST" == *"mvn test"* ]] ; then
+	mvn $PARALLEL test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false -Dgpg.skip=true -Dmaven.javadoc.skip=true
 fi
 
 if [[ "$ACTION_LIST" =~ "mvn clean" ]] ; then
