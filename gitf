@@ -62,7 +62,7 @@ if [[ "$ACTION_LIST" =~ "mvn install" ]] ; then
 fi
 
 if [[ "$ACTION_LIST" =~ "mvn package native" ]] ; then
-	mvn -Pnative clean package -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
+	mvn -Pnative clean package -Dnative.skip=false -DskipTests -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=true -Dmaven.javadoc.skip=true -Dgpg.skip=true
 fi
 
 if [[ "$ACTION_LIST" =~ "gh pr" ]] ; then
