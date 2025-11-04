@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -eu
+
+if [ -z "$5" ]; then
+	echo "Bad syntax:";
+	echo "$0 BEFORE_TAG AFTER_TAG STARTS_EACH_LINE LONG_PROJECT_NAME COPYRIGHT_PROJECT_NAME";
+	exit 1;
+fi
+
+BEFORE_TAG="$1";
+AFTER_TAG="$2";
+STARTS_EACH_LINE="$3";
+LONG_PROJECT_NAME="$4";
+COPYRIGHT_PROJECT_NAME="$5";
+
+# BAD IMPL...
+if [ ! -f "LICENCE.TXT" ]; then
+	echo "Can't found LICENCE.TXT file here.";
+	exit 1;
+fi
+
+# BAD IMPL...
+LINES=$(cat LICENCE.TXT | grep "GNU GENERAL PUBLIC LICENSE" | wc -l);
+if [ "$LINES" == "1" ]; then
+	echo "$BEFORE_TAG";
+	echo "$STARTS_EACH_LINE""This file is part of $LONG_PROJECT_NAME.";
+	echo "$STARTS_EACH_LINE";
+	echo "$STARTS_EACH_LINE""This program is free software; you can redistribute it and/or modify";
+	echo "$STARTS_EACH_LINE""it under the terms of the GNU General Public License as published by";
+	echo "$STARTS_EACH_LINE""the Free Software Foundation; either version 3 of the License, or";
+	echo "$STARTS_EACH_LINE""any later version.";
+	echo "$STARTS_EACH_LINE";
+	echo "$STARTS_EACH_LINE""This program is distributed in the hope that it will be useful,";
+	echo "$STARTS_EACH_LINE""but WITHOUT ANY WARRANTY; without even the implied warranty of";
+	echo "$STARTS_EACH_LINE""MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the";
+	echo "$STARTS_EACH_LINE""GNU General Public License for more details.";
+	echo "$STARTS_EACH_LINE";
+	echo "$STARTS_EACH_LINE""Copyright (C) $COPYRIGHT_PROJECT_NAME ""$(date "+%Y")";
+	echo "$STARTS_EACH_LINE";
+	echo "$AFTER_TAG"
+fi
+

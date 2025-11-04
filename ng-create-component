@@ -1,0 +1,128 @@
+#!/bin/bash
+
+set -e
+
+TYPE_TO_CREATE="component";
+
+EXIT_CODE_BAD_DIR=1;
+EXIT_CODE_MISSING_DEPENDENCY_COMMAND=2;
+EXIT_CODE_OUTPUT_TS_FILE_NOT_FOUND=3;
+
+if [ ! -f "package.json" ]; then
+	echo "Can't found package.json file here. You must be on the root of an Angular project."
+	exit "$EXIT_CODE_BAD_DIR";
+fi
+
+if [ ! -f "angular.json" ]; then
+	echo "Can't found angular.json file here. You must be on the root of an Angular project."
+	exit "$EXIT_CODE_BAD_DIR";
+fi
+
+if ! [ -x "$(command -v jq)" ]; then
+	echo "Error: jq is not installed." >&2
+	exit "$EXIT_CODE_MISSING_DEPENDENCY_COMMAND";
+fi
+
+######################################################
+
+PROJECT_NAME=$(jq -r '.name' package.json);
+SOURCE_ROOT=$(jq -r '.projects.'$PROJECT_NAME'.sourceRoot' angular.json);
+SOURCE_PREFIX=$(jq -r '.projects.'$PROJECT_NAME'.prefix' angular.json);
+SOURCE_DIR="$SOURCE_ROOT/$SOURCE_PREFIX";
+
+if [ ! -d "$SOURCE_DIR" ]; then
+	echo "Can't found dir \"$SOURCE_DIR\" based on \"$PROJECT_NAME\" and package.json/angular.json files."
+	exit "$EXIT_CODE_BAD_DIR";
+fi
+
+echo "Create on project $PROJECT_NAME, in $SOURCE_DIR.";
+
+######################################################
+
+if [ -z "$1" ]
+then
+	read -p "New $TYPE_TO_CREATE name [] " C
+else
+	C="$1";
+fi
+
+[ -z "$C" ] && echo "Cancel operation" && exit 0;
+
+CMD_LINE="generate $TYPE_TO_CREATE $C --type $TYPE_TO_CREATE --skip-tests";
+
+read -p "Option inline-style ? [y/N] " INLINE_STYLE
+if [ "$INLINE_STYLE" == "y" ]; then
+	CMD_LINE="$CMD_LINE --inline-style";
+fi
+
+read -p "Option inline-template ? [y/N] " INLINE_TEMPLATE
+if [ "$INLINE_TEMPLATE" == "y" ]; then
+        CMD_LINE="$CMD_LINE --inline-template";
+fi
+
+ng $CMD_LINE;
+
+######################################################
+
+NEW_ARTIFACT_CREATED_PATH=$(find $SOURCE_DIR -maxdepth 1 -mindepth 1 -type d -printf '%T@ %p\0' | sort -zk 1nr | sed -z 's/^[^ ]* //' | tr '\0' '\n' | head -n 1);
+
+DEST_ARTIFACT_PATH="$SOURCE_DIR/$TYPE_TO_CREATE""s";
+mv "$NEW_ARTIFACT_CREATED_PATH" "$DEST_ARTIFACT_PATH/"
+
+######################################################
+
+LONG_PROJECT_NAME=$(jq -r '."long-project-name"' package.json);
+COPYRIGHT_PROJECT_NAME=$(jq -r '."copyright-project-name"' package.json);
+
+if [ "$LONG_PROJECT_NAME" == "null" ]; then
+	echo "You should add \"long-project-name\" and \"copyright-project-name\" keys to package.json"
+	exit 0;
+fi
+
+CREATED_DIR_NAME=$(basename "$NEW_ARTIFACT_CREATED_PATH");
+
+DEST_ARTIFACT_PATH="$DEST_ARTIFACT_PATH/$CREATED_DIR_NAME";
+
+echo "$DEST_ARTIFACT_PATH";
+
+CSS_FILE="$DEST_ARTIFACT_PATH/$CREATED_DIR_NAME.$TYPE_TO_CREATE.css";
+HTML_FILE="$DEST_ARTIFACT_PATH/$CREATED_DIR_NAME.$TYPE_TO_CREATE.html";
+TS_FILE="$DEST_ARTIFACT_PATH/$CREATED_DIR_NAME.$TYPE_TO_CREATE.ts";
+
+if [ -f "$CSS_FILE" ]; then
+	create-licence-preamble "/*" " */" " * " "$LONG_PROJECT_NAME" "$COPYRIGHT_PROJECT_NAME" > "$0.temp"
+	cat "$CSS_FILE" >> "$0.temp"
+	rm -f "$CSS_FILE";
+	mv "$0.temp" "$CSS_FILE";
+fi
+
+if [ -f "$HTML_FILE" ]; then
+        create-licence-preamble '<!--' '-->' "    " "$LONG_PROJECT_NAME" "$COPYRIGHT_PROJECT_NAME" > "$0.temp"
+        cat "$HTML_FILE" >> "$0.temp"
+        rm -f "$HTML_FILE";
+        mv "$0.temp" "$HTML_FILE";
+fi
+
+if [ ! -f "$TS_FILE" ]; then
+	echo "Can't found moved TS file: $TS_FILE";
+	exit "$EXIT_CODE_OUTPUT_TS_FILE_NOT_FOUND";
+fi
+
+create-licence-preamble "/*" " */" " * " "$LONG_PROJECT_NAME" "$COPYRIGHT_PROJECT_NAME" > "$0.temp"
+
+if [ "$TYPE_TO_CREATE" == "component" ]; then
+	echo "" >> "$0.temp";
+	echo "// TODO clean up this template code:" >> "$0.temp";
+	echo "// import { Component, inject, effect } from '@angular/core';" >> "$0.temp";
+	echo "// import { AsyncPipe } from '@angular/common';" >> "$0.temp";
+	echo "// import { Observable } from 'rxjs';" >> "$0.temp";
+	echo "// import {  } from '../../interfaces/';" >> "$0.temp";
+	echo "// import {  } from '../../services/';" >> "$0.temp";
+	echo "" >> "$0.temp";
+fi
+
+cat "$TS_FILE" >> "$0.temp"
+rm -f "$TS_FILE";
+mv "$0.temp" "$TS_FILE";
+
+exit 0;
