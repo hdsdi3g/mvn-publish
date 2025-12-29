@@ -38,6 +38,7 @@ fi
 cmd=(whiptail --title "$PROJECT_NAME project" --menu "Which kind of artifact do you want to create?" 0 0 0);
 cmd+=("component" "New component");
 cmd+=("service" "New service");
+cmd+=("enum" "New Enum");
 
 set +e
 TYPE_TO_CREATE=$("${cmd[@]}" 3>&1 1>&2 2>&3);
@@ -56,7 +57,7 @@ set -u
 
 [ -z "$C" ] && echo "Cancel operation" && exit 0;
 
-CMD_LINE="generate $TYPE_TO_CREATE $C --type $TYPE_TO_CREATE --skip-tests";
+CMD_LINE="generate $TYPE_TO_CREATE $C --type $TYPE_TO_CREATE";
 
 if [ "$TYPE_TO_CREATE" == "component" ]; then
 	read -p "Option inline-style ? [y/N] " INLINE_STYLE
@@ -68,6 +69,11 @@ if [ "$TYPE_TO_CREATE" == "component" ]; then
 	if [ "$INLINE_TEMPLATE" == "y" ]; then
 		CMD_LINE="$CMD_LINE --inline-template";
 	fi
+	CMD_LINE="$CMD_LINE --skip-tests";
+fi
+
+if [ "$TYPE_TO_CREATE" == "component" ]; then
+	CMD_LINE="$CMD_LINE --skip-tests";
 fi
 
 ng $CMD_LINE;
@@ -85,6 +91,7 @@ fi
 ######################################################
 
 DEST_ARTIFACT_PATH="$SOURCE_DIR/$TYPE_TO_CREATE""s";
+mkdir -p "$DEST_ARTIFACT_PATH/";
 
 if [ "$TYPE_TO_CREATE" == "component" ]; then
 	NEW_ARTIFACT_CREATED_PATH=$(find $SOURCE_DIR -maxdepth 1 -mindepth 1 -type d -printf '%T@ %p\0' | sort -zk 1nr | sed -z 's/^[^ ]* //' | tr '\0' '\n' | head -n 1);
