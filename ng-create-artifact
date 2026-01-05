@@ -39,6 +39,7 @@ cmd=(whiptail --title "$PROJECT_NAME project" --menu "Which kind of artifact do 
 cmd+=("component" "New component");
 cmd+=("service" "New service");
 cmd+=("enum" "New Enum");
+cmd+=("pipe" "New Pipe");
 
 set +e
 TYPE_TO_CREATE=$("${cmd[@]}" 3>&1 1>&2 2>&3);
@@ -57,7 +58,11 @@ set -u
 
 [ -z "$C" ] && echo "Cancel operation" && exit 0;
 
-CMD_LINE="generate $TYPE_TO_CREATE $C --type $TYPE_TO_CREATE";
+if [ "$TYPE_TO_CREATE" == "pipe" ]; then
+	CMD_LINE="generate $TYPE_TO_CREATE $C --skip-tests";
+else
+	CMD_LINE="generate $TYPE_TO_CREATE $C --type $TYPE_TO_CREATE";
+fi
 
 if [ "$TYPE_TO_CREATE" == "component" ]; then
 	read -p "Option inline-style ? [y/N] " INLINE_STYLE
@@ -132,29 +137,6 @@ if [ ! -f "$TS_FILE" ]; then
 fi
 
 create-licence-preamble "/*" " */" " * " "$LONG_PROJECT_NAME" "$COPYRIGHT_PROJECT_NAME" > "$0.temp"
-
-if [ "$TYPE_TO_CREATE" == "component" ]; then
-	echo "" >> "$0.temp";
-	echo "// TODO clean up this template code:" >> "$0.temp";
-	echo "// import { Component, inject, effect } from '@angular/core';" >> "$0.temp";
-	echo "// import { AsyncPipe } from '@angular/common';" >> "$0.temp";
-	echo "// import { Observable } from 'rxjs';" >> "$0.temp";
-	echo "// import {  } from '../../interfaces/';" >> "$0.temp";
-	echo "// import {  } from '../../services/';" >> "$0.temp";
-	echo "// import {  } from '../../dto/';" >> "$0.temp";
-	echo "" >> "$0.temp";
-fi
-
-if [ "$TYPE_TO_CREATE" == "service" ]; then
-        echo "" >> "$0.temp";
-        echo "// TODO clean up this template code:" >> "$0.temp";
-        echo "// import { Injectable, inject } from '@angular/core';" >> "$0.temp";
-        echo "// import { Observable, Subject } from 'rxjs';" >> "$0.temp";
-	echo "// import {  } from '../services/';" >> "$0.temp";
-	echo "// import {  } from '../interfaces/';" >> "$0.temp";
-        echo "// import {  } from '../dto/';" >> "$0.temp";
-        echo "" >> "$0.temp";
-fi
 
 cat "$TS_FILE" >> "$0.temp"
 rm -f "$TS_FILE";
