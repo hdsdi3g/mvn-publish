@@ -58,10 +58,11 @@ set -u
 
 [ -z "$C" ] && echo "Cancel operation" && exit 0;
 
-if [ "$TYPE_TO_CREATE" == "pipe" ]; then
-	CMD_LINE="generate $TYPE_TO_CREATE $C --skip-tests";
-else
-	CMD_LINE="generate $TYPE_TO_CREATE $C --type $TYPE_TO_CREATE";
+
+CMD_LINE="generate $TYPE_TO_CREATE $C --skip-tests";
+
+if [ "$TYPE_TO_CREATE" != "pipe" ]; then
+	CMD_LINE="$CMD_LINE --type $TYPE_TO_CREATE";
 fi
 
 if [ "$TYPE_TO_CREATE" == "component" ]; then
