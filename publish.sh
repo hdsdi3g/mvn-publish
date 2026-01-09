@@ -30,7 +30,8 @@
 set -eu
 CHANGELOGFILE="CHANGELOG.md";
 PRODLIB_VERSION_FILE="env-version/src/main/resources/prodlib-version.txt";
-export JAVA_HOME=$(dirname $(dirname $(realpath $(command -v java))));
+JAVA_HOME=$(dirname "$(dirname "$(realpath "$(command -v java)")")");
+export JAVA_HOME=$JAVA_HOME;
 
 if [ ! -f "pom.xml" ]; then
 	echo "Can't found pom.xml in this directory" >&2;
@@ -42,7 +43,7 @@ git reset
 git pull
 
 POM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout);
-RELATIVE_DIR=$(dirname $(realpath "$0"));
+RELATIVE_DIR=$(dirname "$(realpath "$0")");
 
 IS_MAIN_BRANCH="0";
 ACTUAl_BRANCH=$(git rev-parse --abbrev-ref HEAD);
