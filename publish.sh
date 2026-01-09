@@ -58,8 +58,15 @@ if [[ "$NEW_POM_VERSION" == "" ]]; then
 	exit 0;
 fi
 
-if [[ "$NEW_POM_VERSION" == "PR" ]]; then
+if [[ "$NEW_POM_VERSION" == "TESTS" || "$NEW_POM_VERSION" == "TESTS_PR" ]]; then
+	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false
+fi
+
+if [[ "$NEW_POM_VERSION" == "PR" || "$NEW_POM_VERSION" == "TESTS_PR" ]]; then
 	"$RELATIVE_DIR/gh-create-pr.sh"
+fi
+
+if [[ "$NEW_POM_VERSION" == "TESTS" ||  "$NEW_POM_VERSION" == "PR" || "$NEW_POM_VERSION" == "TESTS_PR" ]]; then
 	exit 0;
 fi
 

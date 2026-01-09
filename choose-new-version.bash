@@ -45,7 +45,9 @@ if [[ "$POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
     cmd+=("$POM_VERSION" "Keep current opened version")
     cmd+=("$POM_BASE_VERSION" "Close current version")
     if [[ "$IS_MAIN_BRANCH" == "0" ]]; then
+        cmd+=("TESTS" "Do a simple clean test on $ACTUAl_BRANCH")
         cmd+=("PR" "Create a new GitHub Pull Request for branch $ACTUAl_BRANCH")
+        cmd+=("TESTS_PR" "Create a new GitHub Pull Request for branch $ACTUAl_BRANCH and do a simple clean test")
     fi
     cmd+=("$INCR_PATCH-SNAPSHOT" "Open new patch version")
     cmd+=("$INCR_MIN-SNAPSHOT" "Open new minor version")
