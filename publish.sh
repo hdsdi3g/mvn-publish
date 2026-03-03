@@ -59,7 +59,7 @@ if [[ "$NEW_POM_VERSION" == "" ]]; then
 fi
 
 if [[ "$NEW_POM_VERSION" == "TESTS" || "$NEW_POM_VERSION" == "TESTS_PR" ]]; then
-	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false
+	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true
 fi
 
 if [[ "$NEW_POM_VERSION" == "PR" || "$NEW_POM_VERSION" == "TESTS_PR" ]]; then
@@ -120,7 +120,7 @@ if [[ "$ACTION_LIST" =~ "A14" ]] ; then
 fi
 
 if [[ "$ACTION_LIST" =~ "A04" ]] ; then
-	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true -Dagent=false
+	mvn clean test -Djacoco.skip=true -Dlicense.skipAddThirdParty=true
 fi
 
 if [[ "$ACTION_LIST" =~ "A09" ]] ; then
