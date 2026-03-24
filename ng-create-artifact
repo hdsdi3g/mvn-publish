@@ -59,26 +59,32 @@ set -u
 [ -z "$C" ] && echo "Cancel operation" && exit 0;
 
 
-CMD_LINE="generate $TYPE_TO_CREATE $C --skip-tests";
+CMD_LINE="generate $TYPE_TO_CREATE $C";
 
-if [ "$TYPE_TO_CREATE" != "pipe" ]; then
+if [ "$TYPE_TO_CREATE" == "component" ]; then
+	CMD_LINE="$CMD_LINE --skip-tests";
+        read -p "Option inline-style ? [y/N] " INLINE_STYLE
+        if [ "$INLINE_STYLE" == "y" ]; then
+                CMD_LINE="$CMD_LINE --inline-style";
+        fi
+
+        read -p "Option inline-template ? [y/N] " INLINE_TEMPLATE
+        if [ "$INLINE_TEMPLATE" == "y" ]; then
+                CMD_LINE="$CMD_LINE --inline-template";
+        fi
 	CMD_LINE="$CMD_LINE --type $TYPE_TO_CREATE";
 fi
 
-if [ "$TYPE_TO_CREATE" == "component" ]; then
-	read -p "Option inline-style ? [y/N] " INLINE_STYLE
-	if [ "$INLINE_STYLE" == "y" ]; then
-		CMD_LINE="$CMD_LINE --inline-style";
-	fi
-	
-	read -p "Option inline-template ? [y/N] " INLINE_TEMPLATE
-	if [ "$INLINE_TEMPLATE" == "y" ]; then
-		CMD_LINE="$CMD_LINE --inline-template";
-	fi
+if [ "$TYPE_TO_CREATE" == "service" ]; then
 	CMD_LINE="$CMD_LINE --skip-tests";
+	CMD_LINE="$CMD_LINE --type $TYPE_TO_CREATE";
 fi
 
-if [ "$TYPE_TO_CREATE" == "component" ]; then
+if [ "$TYPE_TO_CREATE" == "enum" ]; then
+	CMD_LINE="$CMD_LINE --type $TYPE_TO_CREATE";
+fi
+
+if [ "$TYPE_TO_CREATE" == "pipe" ]; then
 	CMD_LINE="$CMD_LINE --skip-tests";
 fi
 
