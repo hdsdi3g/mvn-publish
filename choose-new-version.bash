@@ -42,13 +42,13 @@ INCR_PATCH="$MAJ.$MIN."$(echo $PATCH+1 | bc)
 
 cmd=(whiptail --title "Select pom.xml version to up set" --menu "Which version should we go to, from the actual $POM_VERSION?" 0 0 0);
 if [[ "$POM_VERSION" =~ .*"SNAPSHOT".*  ]]; then
-    cmd+=("$POM_VERSION" "Keep current opened version")
-    cmd+=("$POM_BASE_VERSION" "Close current version")
     if [[ "$IS_MAIN_BRANCH" == "0" ]]; then
         cmd+=("TESTS" "Do a simple clean test on $ACTUAl_BRANCH")
         cmd+=("PR" "Create a new GitHub Pull Request for branch $ACTUAl_BRANCH")
         cmd+=("TESTS_PR" "Create a new GitHub Pull Request for branch $ACTUAl_BRANCH and do a simple clean test")
     fi
+    cmd+=("$POM_VERSION" "Keep current opened version")
+    cmd+=("$POM_BASE_VERSION" "Close current version")
     cmd+=("$INCR_PATCH-SNAPSHOT" "Open new patch version")
     cmd+=("$INCR_MIN-SNAPSHOT" "Open new minor version")
     cmd+=("$INCR_MAJ-SNAPSHOT" "Open new major version")
