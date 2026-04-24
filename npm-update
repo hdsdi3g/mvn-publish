@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -eu
+
+if [ ! -f "package.json" ]; then
+    echo "Can't found package.json from here";
+    exit 1;
+fi
+
+echo "1st update"
+npm update
+
+echo "Delete package-lock.json"
+rm -f package-lock.json
+
+echo "Delete node_modules"
+rm -rf node_modules
+
+echo "Update npm itself"
+npm install -g npm@latest
+
+echo "Install"
+npm install
+
+echo "2nd update"
+npm update
+
+echo "Build"
+npm run build
+
+echo "git add package-lock.json"
+git add package-lock.json
